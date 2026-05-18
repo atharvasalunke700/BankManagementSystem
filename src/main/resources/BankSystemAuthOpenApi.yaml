@@ -1,0 +1,660 @@
+openapi: 3.0.3
+
+info:
+  title: Banking Authentication API
+  description: Enterprise Banking Authentication APIs
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+    description: Local Development Server
+
+security:
+  - bearerAuth: []
+
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+
+    UnlockAccountRequest:
+      type: object
+
+      required:
+        - fullName
+        - email
+        - phone
+        - dateOfBirth
+
+      properties:
+        fullName:
+          type: string
+          minLength: 3
+          
+        email:
+          type: string
+          format: email
+          example: shivam@gmail.com
+
+        phone:
+          type: string
+          pattern: '^[0-9]{10}$'
+          example: "9876543210"
+        
+        dateOfBirth:
+          type: string
+          format: date
+          example: "2000-01-15"
+
+        reason:
+          type: string
+          example: Account locked due to failed login attempts
+
+    UnlockAccountResponse:
+      type: object
+
+      properties:
+        message:
+          type: string
+          example: Unlock request submitted successfully
+
+        timestamp:
+          type: string
+          format: date-time
+
+
+    ErrorResponse:
+      type: object
+
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+
+        status:
+          type: integer
+          example: 400
+
+        error:
+          type: string
+          example: Bad Request
+
+        message:
+          type: string
+          example: Invalid credentials
+
+        path:
+          type: string
+          example: /api/v1/auth/login
+
+    UserResponse:
+      type: object
+
+      properties:
+        id:
+          type: integer
+          example: 1
+
+        fullName:
+          type: string
+          example: Shivam Kharade
+
+        email:
+          type: string
+          format: email
+          example: shivam@gmail.com
+
+        phone:
+          type: string
+          pattern: '^[0-9]{10}$'
+          example: "9876543210"
+
+        role:
+          type: string
+          example: USER
+
+    RegisterRequest:
+      type: object
+
+      required:
+        - fullName
+        - email
+        - password
+        - phone
+        - dateOfBirth
+
+      properties:
+        fullName:
+          type: string
+          minLength: 3
+
+        email:
+          type: string
+          format: email
+
+        password:
+          type: string
+          minLength: 8
+
+        phone:
+          type: string
+          pattern: '^[0-9]{10}$'
+
+        dateOfBirth:
+          type: string
+          format: date
+          example: "2000-01-15"
+
+    RegisterResponse:
+      type: object
+
+      properties:
+        userId:
+          type: integer
+          example: 1
+
+        fullName:
+          type: string
+          example: Shivam Kharade
+
+        email:
+          type: string
+          format: email
+          example: shivam@gmail.com
+
+        role:
+          type: string
+          example: USER
+
+        createdAt:
+          type: string
+          format: date-time
+
+    LoginRequest:
+      type: object
+
+      required:
+        - email
+        - password
+
+      properties:
+        email:
+          type: string
+          format: email
+          example: shivam@gmail.com
+
+        password:
+          type: string
+          minLength: 8
+          example: Password@123
+
+    AuthResponse:
+      type: object
+
+      properties:
+        accessToken:
+          type: string
+          example: jwt-token
+
+        refreshToken:
+          type: string
+          example: refresh-token
+
+        expiresIn:
+          type: integer
+          example: 3600
+
+        role:
+          type: string
+          example: USER
+
+    RefreshTokenRequest:
+      type: object
+
+      required:
+        - refreshToken
+
+      properties:
+        refreshToken:
+          type: string
+          example: refresh-token
+
+    ForgotPasswordRequest:
+      type: object
+
+      required:
+        - email
+        - dateOfBirth
+
+      properties:
+        email:
+          type: string
+          format: email
+          example: shivam@gmail.com
+        
+        dateOfBirth:
+          type: string
+          format: date
+          example: "2000-01-15"
+
+    PasswordChangeRequest:
+      type: object
+
+      required:
+        - currentPassword
+
+      properties:
+        currentPassword:
+          type: string
+          minLength: 8
+          example: OldPassword@123
+
+    PasswordChangeConfirmRequest:
+      type: object
+
+      required:
+        - otpCode
+        - newPassword
+        - confirmPassword
+
+      properties:
+        otpCode:
+          type: string
+          example: "834921"
+
+        newPassword:
+          type: string
+          minLength: 8
+          example: NewPassword@123
+
+        confirmPassword:
+          type: string
+          minLength: 8
+          example: NewPassword@123
+
+    GenericSuccessResponse:
+      type: object
+
+      properties:
+        message:
+          type: string
+          example: Password changed successfully
+
+        timestamp:
+          type: string
+          format: date-time
+
+paths:
+
+  /api/v1/auth/register:
+    post:
+      tags:
+        - Authentication APIs
+
+      summary: Register a new user
+
+      security: []
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+
+      responses:
+        '201':
+          description: User registered successfully
+
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+
+        '409':
+          description: Email already exists
+
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auth/login:
+    post:
+      tags:
+        - Authentication APIs
+
+      summary: Login user
+
+      security: []
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+
+      responses:
+        '200':
+          description: Login successful
+
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+
+        '401':
+          description: Invalid credentials
+
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '423':
+          description: Account temporarily locked
+
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auth/logout:
+    post:
+      tags:
+        - Authentication APIs
+
+      summary: Logout user and revoke refresh tokens
+
+      responses:
+        '200':
+          description: Logout successful
+
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericSuccessResponse'
+
+  /api/v1/auth/refresh-token:
+    post:
+      tags:
+        - Authentication APIs
+
+      summary: Refresh access token
+
+      security: []
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+
+      responses:
+        '200':
+          description: Token refreshed successfully
+
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+
+        '401':
+          description: Invalid refresh token
+
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auth/forgot-password:
+    post:
+      tags:
+        - Authentication APIs
+
+      summary: Initiate forgot password request
+
+      description: OTP valid for 5 minutes
+
+      security: []
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPasswordRequest'
+
+      responses:
+        '200':
+          description: Password reset OTP sent successfully
+
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericSuccessResponse'
+
+        '404':
+          description: User not found
+
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auth/reset-password/confirm:
+    post:
+      tags:
+        - Authentication APIs
+
+      summary: Confirm password reset using OTP
+
+      description: OTP valid for 5 minutes
+
+      security: []
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordChangeConfirmRequest'
+
+      responses:
+        '200':
+          description: Password changed successfully
+
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericSuccessResponse'
+
+        '400':
+          description: Invalid or expired OTP
+
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auth/resend-verification:
+    post:
+      tags:
+        - Authentication APIs
+
+      summary: Resend email verification link
+
+      security: []
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPasswordRequest'
+
+      responses:
+        '200':
+          description: Verification email sent successfully
+
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericSuccessResponse'
+
+        '404':
+          description: User not found
+
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/auth/unlock-account:
+    post:
+      tags:
+        - Authentication APIs
+
+      summary: Request account unlock
+
+      security: []
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnlockAccountRequest'
+
+      responses:
+        '200':
+          description: Unlock request submitted successfully
+
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnlockAccountResponse'
+
+        '404':
+          description: User not found
+
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/users/me/password/change-request:
+    post:
+      tags:
+        - User APIs
+
+      summary: Initiate password change request for logged-in user
+
+      description: OTP valid for 5 minutes
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordChangeRequest'
+
+      responses:
+        '200':
+          description: OTP sent successfully
+
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericSuccessResponse'
+
+        '401':
+          description: Invalid current password
+
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/users/me:
+    get:
+      tags:
+        - User APIs
+
+      summary: Get logged-in user details
+
+      responses:
+        '200':
+          description: User details fetched successfully
+
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+
+        '401':
+          description: Unauthorized
+
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      tags:
+        - User APIs
+
+      summary: Update logged-in user profile
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              type: object
+
+              properties:
+                fullName:
+                  type: string
+                  minLength: 3
+
+                phone:
+                  type: string
+                  pattern: '^[0-9]{10}$'
+
+                address:
+                  type: string
+
+      responses:
+        '200':
+          description: User updated successfully
+
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+
+        '401':
+          description: Unauthorized
+
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/ErrorResponse'
+   

@@ -1,0 +1,655 @@
+openapi: 3.0.3
+
+info:
+  title: Banking System API - User Services
+  description: Enterprise Banking Backend APIs for user operations with strict validations, idempotency, and RESTful standards.
+  version: 1.1.0
+
+servers:
+  - url: http://localhost:8080
+    description: Local Development Server
+  - url: https://api.bank-example.com
+    description: Production Server
+
+security:
+  - bearerAuth: []
+
+paths:
+  /api/v1/accounts:
+    post:
+      tags:
+        - Account APIs
+      summary: Create bank account for logged-in user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAccountRequest'
+      responses:
+        '201':
+          description: Account created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /api/v1/accounts/{accountNumber}:
+    get:
+      tags:
+        - Account APIs
+      summary: Get account details
+      parameters:
+        - $ref: '#/components/parameters/AccountNumberParam'
+      responses:
+        '200':
+          description: Account fetched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/v1/accounts/{accountNumber}/balance:
+    get:
+      tags:
+        - Account APIs
+      summary: Get account balance
+      parameters:
+        - $ref: '#/components/parameters/AccountNumberParam'
+      responses:
+        '200':
+          description: Balance fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accountNumber:
+                    type: string
+                    example: "123456789"
+                  balance:
+                    type: number
+                    example: 10000
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/v1/accounts/{accountNumber}/transactions:
+    get:
+      tags:
+        - Transaction APIs
+      summary: Get transaction history for an account
+      parameters:
+        - $ref: '#/components/parameters/AccountNumberParam'
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/SizeParam'
+      responses:
+        '200':
+          description: Paginated transaction history fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TransactionHistoryResponse'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/v1/transactions/deposit:
+    post:
+      tags:
+        - Transaction APIs
+      summary: Deposit money
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - accountNumber
+                - amount
+              properties:
+                accountNumber:
+                  type: string
+                  minLength: 9
+                  maxLength: 18
+                  example: "123456789"
+                amount:
+                  type: number
+                  example: 5000
+                  minimum: 1
+      responses:
+        '200':
+          description: Deposit successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+
+  /api/v1/transactions/withdraw:
+    post:
+      tags:
+        - Transaction APIs
+      summary: Withdraw money
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - accountNumber
+                - amount
+              properties:
+                accountNumber:
+                  type: string
+                  minLength: 9
+                  maxLength: 18
+                  example: "123456789"
+                amount:
+                  type: number
+                  example: 2000
+                  minimum: 1
+      responses:
+        '200':
+          description: Withdrawal successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+
+  /api/v1/transactions/transfer:
+    post:
+      tags:
+        - Transaction APIs
+      summary: Transfer money
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferRequest'
+      responses:
+        '200':
+          description: Transfer successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '400':
+          description: Bad request (e.g., insufficient balance)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/beneficiaries:
+    post:
+      tags:
+        - Beneficiary APIs
+      summary: Add beneficiary
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BeneficiaryRequest'
+      responses:
+        '201':
+          description: Beneficiary added successfully
+          content: 
+            application/json: 
+              schema: 
+                $ref: '#/components/schemas/BeneficiaryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+
+  /api/v1/payments/bill:
+    post:
+      tags:
+        - Payment APIs
+      summary: Pay utility bill
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - biller
+                - amount
+              properties:
+                biller:
+                  type: string
+                  example: Electricity Board
+                amount:
+                  type: number
+                  example: 1500
+                  minimum: 1
+      responses:
+        '200':
+          description: Bill payment successful
+          content: 
+            application/json: 
+              schema: 
+                $ref: '#/components/schemas/PaymentResponse'
+
+  /api/v1/payments/upi:
+    post:
+      tags:
+        - Payment APIs
+      summary: UPI money transfer
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - upiId
+                - amount
+              properties:
+                upiId:
+                  type: string
+                  example: shivam@oksbi
+                  pattern: "^[a-zA-Z0-9.\\-_]{2,256}@[a-zA-Z]{2,64}$"
+                amount:
+                  type: number
+                  example: 500
+                  minimum: 1
+      responses:
+        '200':
+          description: UPI transfer successful
+          content: 
+            application/json: 
+              schema: 
+                $ref: '#/components/schemas/PaymentResponse'
+
+  /api/v1/loans:
+    post:
+      tags:
+        - Loan APIs
+      summary: Apply for loan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoanRequest'
+      responses:
+        '201':
+          description: Loan application submitted
+          content: 
+            application/json: 
+              schema: 
+                $ref: '#/components/schemas/LoanResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    AccountNumberParam:
+      name: accountNumber
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 9
+        maxLength: 18
+        example: "123456789"
+    PageParam:
+      name: page
+      in: query
+      description: Page number for pagination (0-indexed)
+      schema:
+        type: integer
+        default: 0
+        minimum: 0
+    SizeParam:
+      name: size
+      in: query
+      description: Number of records per page
+      schema:
+        type: integer
+        default: 20
+        minimum: 1
+        maximum: 100
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: Unique UUID generated by the client to prevent duplicate processing on retries.
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    BadRequestError:
+      description: Invalid request payload or parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnauthorizedError:
+      description: Missing or invalid JWT Token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFoundError:
+      description: The requested resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    PaginationMeta:
+      type: object
+      properties:
+        totalElements:
+          type: integer
+          example: 150
+        totalPages:
+          type: integer
+          example: 8
+        currentPage:
+          type: integer
+          example: 0
+        pageSize:
+          type: integer
+          example: 20
+
+    CreateAccountRequest:
+      type: object
+      required:
+        - accountType
+        - initialDeposit
+      properties:
+        accountType:
+          type: string
+          enum: [SAVINGS, CHECKING, CURRENT]
+          example: SAVINGS
+        initialDeposit:
+          type: number
+          minimum: 1000
+          example: 10000
+
+    AccountResponse:
+      type: object
+      properties:
+        accountId:
+          type: integer
+          example: 101
+        accountNumber:
+          type: string
+          example: "123456789"
+        accountType:
+          type: string
+          enum: [SAVINGS, CHECKING, CURRENT]
+          example: SAVINGS
+        balance:
+          type: number
+          example: 10000
+        status:
+          type: string
+          enum: [ACTIVE, FROZEN, CLOSED]
+          example: ACTIVE
+        createdAt:
+          type: string
+          format: date-time
+
+    TransferRequest:
+      type: object
+      required:
+        - fromAccount
+        - toAccount
+        - amount
+      properties:
+        fromAccount:
+          type: string
+          minLength: 9
+          maxLength: 18
+          example: "123456789"
+        toAccount:
+          type: string
+          minLength: 9
+          maxLength: 18
+          example: "987654321"
+        amount:
+          type: number
+          minimum: 1
+          example: 2500
+        remarks:
+          type: string
+          maxLength: 100
+          example: Rent Payment
+
+    TransactionResponse:
+      type: object
+      properties:
+        transactionId:
+          type: string
+          example: TXN12345
+        transactionType:
+          type: string
+          enum: [DEPOSIT, WITHDRAWAL, TRANSFER]
+          example: DEPOSIT
+        fromAccount:
+          type: string
+          example: "123456789"
+        toAccount:
+          type: string
+          example: "987654321"
+        amount:
+          type: number
+          example: 5000
+        updatedBalance:
+          type: number
+          example: 55000
+        status:
+          type: string
+          enum: [PENDING, SUCCESS, FAILED]
+          example: SUCCESS
+        remarks:
+          type: string
+          example: Rent Payment
+        timestamp:
+          type: string
+          format: date-time
+
+    TransactionHistoryResponse:
+      type: object
+      properties:
+        transactionId:
+          type: string
+          example: TXN1
+        transactionType:
+          type: string
+          example: DEPOSIT
+        fromAccount:
+          type: string
+          example: "123456789"
+        toAccount:
+          type: string
+          example: "987654321"
+        amount:
+          type: number
+          example: 5000
+        balanceAfterTransaction:
+          type: number
+          example: 15000
+        status:
+          type: string
+          example: SUCCESS
+        timestamp:
+          type: string
+          format: date-time
+
+    BeneficiaryRequest:
+      type: object
+      required:
+        - beneficiaryName
+        - beneficiaryAccount
+        - ifscCode
+      properties:
+        beneficiaryName:
+          type: string
+          maxLength: 100
+          example: Rahul Sharma
+        beneficiaryAccount:
+          type: string
+          minLength: 9
+          maxLength: 18
+          example: "567890123"
+        ifscCode:
+          type: string
+          pattern: "^[A-Z]{4}0[A-Z0-9]{6}$"
+          example: SBIN0001234
+          
+    BeneficiaryResponse:
+      type: object
+      properties:
+        beneficiaryId:
+          type: integer
+          example: 1
+        beneficiaryName:
+          type: string
+          example: Rahul Sharma
+        beneficiaryAccount:
+          type: string
+          example: "567890123"
+        ifscCode:
+          type: string
+          example: SBIN0001234
+        createdAt:
+          type: string
+          format: date-time
+
+    PaymentResponse:
+      type: object
+      properties:
+        paymentId:
+          type: string
+          example: PAY12345
+        paymentType:
+          type: string
+          enum: [BILL_PAYMENT, UPI]
+          example: BILL_PAYMENT
+        accountNumber:
+          type: string
+          example: "123456789"
+        amount:
+          type: number
+          example: 1500
+        updatedBalance:
+          type: number
+          example: 48500
+        status:
+          type: string
+          example: SUCCESS
+        timestamp:
+          type: string
+          format: date-time
+
+    LoanRequest:
+      type: object
+      required:
+        - loanType
+        - amount
+        - tenure
+      properties:
+        loanType:
+          type: string
+          enum: [HOME_LOAN, CAR_LOAN, PERSONAL_LOAN]
+          example: HOME_LOAN
+        amount:
+          type: number
+          minimum: 10000
+          example: 5000000
+        tenure:
+          type: integer
+          minimum: 6
+          maximum: 360
+          example: 240
+
+    LoanResponse:
+      type: object
+      properties:
+        loanId:
+          type: integer
+          example: 101
+        loanType:
+          type: string
+          example: HOME_LOAN
+        amount:
+          type: number
+          example: 5000000
+        interestRate:
+          type: number
+          example: 8.5
+        tenure:
+          type: integer
+          example: 240
+        monthlyEmi:
+          type: number
+          example: 43000
+        status:
+          type: string
+          enum: [PENDING_APPROVAL, APPROVED, REJECTED, DISBURSED]
+          example: PENDING_APPROVAL
+        createdAt:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+          example: 400
+        error:
+          type: string
+          example: Bad Request
+        message:
+          type: string
+          example: Validation failed
+        path:
+          type: string
+          example: /api/v1/accounts
