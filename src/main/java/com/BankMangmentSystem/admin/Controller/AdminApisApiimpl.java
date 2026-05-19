@@ -2,6 +2,7 @@ package com.BankMangmentSystem.admin.Controller;
 
 import java.util.List;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -13,6 +14,7 @@ import com.banksystem.admin.dto.ApiV1AdminBeneficiariesBeneficiaryIdDelete200Res
 import com.banksystem.admin.dto.ApiV1AdminLoansGet200Response;
 import com.banksystem.admin.dto.ApiV1AdminUsersGet200Response;
 import com.banksystem.admin.dto.BeneficiaryResponse;
+import com.banksystem.admin.dto.ErrorResponse;
 import com.banksystem.admin.dto.LoanResponse;
 
 import jakarta.validation.Valid;
@@ -24,8 +26,11 @@ public class AdminApisApiimpl implements AdminApisApi {
 	
 	private final AdminApisApiService service;
 	
+	private final ModelMapper mapper;
+	
 	public AdminApisApiimpl(AdminApisApiService service1) {
 		this.service = service1;
+		this.mapper = new ModelMapper();
 	}
 
 	@Override
@@ -39,7 +44,7 @@ public class AdminApisApiimpl implements AdminApisApi {
 	public ResponseEntity<ApiV1AdminBeneficiariesBeneficiaryIdDelete200Response> apiV1AdminBeneficiariesBeneficiaryIdDelete(
 			@NotNull Integer beneficiaryId) {
 		
-		ApiV1AdminBeneficiariesBeneficiaryIdDelete200Response response = service.apiV1AdminBeneficiariesBeneficiaryIdDelete(beneficiaryId);
+		ApiV1AdminBeneficiariesBeneficiaryIdDelete200Response response = mapper.map(service.apiV1AdminBeneficiariesBeneficiaryIdDelete(beneficiaryId), ApiV1AdminBeneficiariesBeneficiaryIdDelete200Response.class);
 		
 		return new ResponseEntity<>(response,HttpStatus.OK);
 	}
@@ -53,27 +58,27 @@ public class AdminApisApiimpl implements AdminApisApi {
 	@Override
 	public ResponseEntity<ApiV1AdminLoansGet200Response> apiV1AdminLoansGet(@Min(0) @Valid Integer page,
 			@Min(1) @Max(100) @Valid Integer size) {
-		// TODO Auto-generated method stub
-		return AdminApisApi.super.apiV1AdminLoansGet(page, size);
+		ApiV1AdminLoansGet200Response response =service.apiV1AdminLoansGet(page, size);
+		return new ResponseEntity<>(response,HttpStatus.OK);
 	}
 
 	@Override
 	public ResponseEntity<LoanResponse> apiV1AdminLoansLoanIdApprovePut(@NotNull Integer loanId) {
-		// TODO Auto-generated method stub
-		return AdminApisApi.super.apiV1AdminLoansLoanIdApprovePut(loanId);
+		LoanResponse response =service.apiV1AdminLoansLoanIdApprovePut(loanId);
+		return new ResponseEntity<>(response,HttpStatus.OK);
 	}
 
 	@Override
 	public ResponseEntity<LoanResponse> apiV1AdminLoansLoanIdGet(@NotNull Integer loanId) {
-		// TODO Auto-generated method stub
-		return AdminApisApi.super.apiV1AdminLoansLoanIdGet(loanId);
+		LoanResponse response=service.apiV1AdminLoansLoanIdGet(loanId);
+		return new ResponseEntity<>(response,HttpStatus.OK);
 	}
 
 	@Override
 	public ResponseEntity<ApiV1AdminUsersGet200Response> apiV1AdminUsersGet(@Min(0) @Valid Integer page,
 			@Min(1) @Max(100) @Valid Integer size) {
-		// TODO Auto-generated method stub
-		return AdminApisApi.super.apiV1AdminUsersGet(page, size);
+		ApiV1AdminUsersGet200Response response=service.apiV1AdminUsersGet(page, size);
+		return new ResponseEntity<>(response,HttpStatus.OK);
 	}
 
 	

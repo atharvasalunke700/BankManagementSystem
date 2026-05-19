@@ -1,8 +1,8 @@
-package com.BankMangmentSystem.Enum;
+package com.BankMangmentSystem.entity;
 
 import org.joda.time.LocalDateTime;
 
-import com.BankMangmentSystem.entity.UserAdmin;
+import com.BankMangmentSystem.Enum.OtpPurpose;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

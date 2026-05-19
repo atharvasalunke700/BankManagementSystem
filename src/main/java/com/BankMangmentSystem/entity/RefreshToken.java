@@ -1,8 +1,6 @@
-package com.BankMangmentSystem.Enum;
+package com.BankMangmentSystem.entity;
 
 import java.time.LocalDateTime;
-
-import com.BankMangmentSystem.entity.UserAdmin;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

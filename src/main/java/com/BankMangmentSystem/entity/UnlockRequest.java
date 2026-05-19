@@ -1,8 +1,8 @@
-package com.BankMangmentSystem.Enum;
+package com.BankMangmentSystem.entity;
 
 import java.time.LocalDateTime;
 
-import com.BankMangmentSystem.entity.UserAdmin;
+import com.BankMangmentSystem.Enum.UnlockStatus;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

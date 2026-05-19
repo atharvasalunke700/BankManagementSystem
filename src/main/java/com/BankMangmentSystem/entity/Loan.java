@@ -2,7 +2,12 @@ package com.BankMangmentSystem.entity;
 
 import org.joda.time.LocalDateTime;
 
+import com.BankMangmentSystem.Enum.LoanStatus;
+import com.BankMangmentSystem.Enum.LoanType;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -18,7 +23,8 @@ public class Loan {
 	    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	    private Long loanId;
 
-	    private String loanType;
+	    @Enumerated(EnumType.STRING)
+	    private LoanType loanType;
 
 	    private double amount;
 
@@ -28,9 +34,12 @@ public class Loan {
 
 	    private double monthlyEmi;
 
-	    private String status;
+	    @Enumerated(EnumType.STRING)
+	    private LoanStatus  status;
 
 	    private LocalDateTime createdAt;
+	    
+	    
 
 	    @ManyToOne
 	    @JoinColumn(name = "user_id")
@@ -39,8 +48,80 @@ public class Loan {
 	    public Loan() {
 	    }
 
-		public Loan(Long loanId, String loanType, double amount, double interestRate, int tenure, double monthlyEmi,
-				String status, LocalDateTime createdAt, UserAdmin user) {
+		public Long getLoanId() {
+			return loanId;
+		}
+
+		public void setLoanId(Long loanId) {
+			this.loanId = loanId;
+		}
+
+		public LoanType getLoanType() {
+			return loanType;
+		}
+
+		public void setLoanType(LoanType loanType) {
+			this.loanType = loanType;
+		}
+
+		public double getAmount() {
+			return amount;
+		}
+
+		public void setAmount(double amount) {
+			this.amount = amount;
+		}
+
+		public double getInterestRate() {
+			return interestRate;
+		}
+
+		public void setInterestRate(double interestRate) {
+			this.interestRate = interestRate;
+		}
+
+		public int getTenure() {
+			return tenure;
+		}
+
+		public void setTenure(int tenure) {
+			this.tenure = tenure;
+		}
+
+		public double getMonthlyEmi() {
+			return monthlyEmi;
+		}
+
+		public void setMonthlyEmi(double monthlyEmi) {
+			this.monthlyEmi = monthlyEmi;
+		}
+
+		public LoanStatus getStatus() {
+			return status;
+		}
+
+		public void setStatus(LoanStatus status) {
+			this.status = status;
+		}
+
+		public LocalDateTime getCreatedAt() {
+			return createdAt;
+		}
+
+		public void setCreatedAt(LocalDateTime createdAt) {
+			this.createdAt = createdAt;
+		}
+
+		public UserAdmin getUser() {
+			return user;
+		}
+
+		public void setUser(UserAdmin user) {
+			this.user = user;
+		}
+
+		public Loan(Long loanId, LoanType loanType, double amount, double interestRate, int tenure, double monthlyEmi,
+				LoanStatus status, LocalDateTime createdAt, UserAdmin user) {
 			super();
 			this.loanId = loanId;
 			this.loanType = loanType;
@@ -53,11 +134,6 @@ public class Loan {
 			this.user = user;
 		}
 
-		@Override
-		public String toString() {
-			return "Loan [loanId=" + loanId + ", loanType=" + loanType + ", amount=" + amount + ", interestRate="
-					+ interestRate + ", tenure=" + tenure + ", monthlyEmi=" + monthlyEmi + ", status=" + status
-					+ ", createdAt=" + createdAt + ", user=" + user + "]";
-		}
+		
 
 }

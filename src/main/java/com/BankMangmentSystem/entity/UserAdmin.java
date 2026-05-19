@@ -2,9 +2,11 @@ package com.BankMangmentSystem.entity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.BankMangmentSystem.Enum.userAdminEnum;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -12,6 +14,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -23,19 +26,36 @@ public class UserAdmin {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 	
+	@Column(nullable= false)
 	private String fullName;
 	
 	@Column(unique=true, nullable=false)
 	private  String email;
 	
-	@Column(nullable= false)
+	@Column(unique= true,nullable= false)
 	private String phone;
 	
 	
-
-	public UserAdmin(){
-		
+	public UserAdmin(long id, String fullName, String email, String phone, String password, userAdminEnum role,
+			LocalDateTime createdAt, boolean accountLocked, int failedLoginAttempts, boolean emailVerified,
+			LocalDate dateOfBirth, List<Account> accounts, List<Beneficiary> beneficiaries, List<Loan> loans) {
+		super();
+		this.id = id;
+		this.fullName = fullName;
+		this.email = email;
+		this.phone = phone;
+		this.password = password;
+		this.role = role;
+		this.createdAt = createdAt;
+		this.accountLocked = accountLocked;
+		this.failedLoginAttempts = failedLoginAttempts;
+		this.emailVerified = emailVerified;
+		this.dateOfBirth = dateOfBirth;
+		this.accounts = accounts;
+		this.beneficiaries = beneficiaries;
+		this.loans = loans;
 	}
+
 	public long getId() {
 		return id;
 	}
@@ -92,39 +112,6 @@ public class UserAdmin {
 		this.createdAt = createdAt;
 	}
 
-	@Column(nullable= false)
-	private String password;
-	
-	@Enumerated(EnumType.STRING)
-	private userAdminEnum role;
-	
-	private LocalDateTime createdAt;
-	
-	private boolean accountLocked;
-	
-	private int failedLoginAttempts;
-	
-	private boolean emailVerified;
-	
-	private LocalDate dateOfBirth;
-
-	public UserAdmin(long id, String fullName, String email, String phone, String password, userAdminEnum role,
-			LocalDateTime createdAt, boolean accountLocked, int failedLoginAttempts, boolean emailVerified,
-			LocalDate dateOfBirth) {
-		super();
-		this.id = id;
-		this.fullName = fullName;
-		this.email = email;
-		this.phone = phone;
-		this.password = password;
-		this.role = role;
-		this.createdAt = createdAt;
-		this.accountLocked = accountLocked;
-		this.failedLoginAttempts = failedLoginAttempts;
-		this.emailVerified = emailVerified;
-		this.dateOfBirth = dateOfBirth;
-	}
-
 	public boolean isAccountLocked() {
 		return accountLocked;
 	}
@@ -156,8 +143,60 @@ public class UserAdmin {
 	public void setDateOfBirth(LocalDate dateOfBirth) {
 		this.dateOfBirth = dateOfBirth;
 	}
-	
-	
-	
 
+	public List<Account> getAccounts() {
+		return accounts;
+	}
+
+	public void setAccounts(List<Account> accounts) {
+		this.accounts = accounts;
+	}
+
+	public List<Beneficiary> getBeneficiaries() {
+		return beneficiaries;
+	}
+
+	public void setBeneficiaries(List<Beneficiary> beneficiaries) {
+		this.beneficiaries = beneficiaries;
+	}
+
+	public List<Loan> getLoans() {
+		return loans;
+	}
+
+	public void setLoans(List<Loan> loans) {
+		this.loans = loans;
+	}
+
+	public UserAdmin(){
+		
+	}
+	
+	@Column(nullable= false)
+	private String password;
+	
+	@Enumerated(EnumType.STRING)
+	private userAdminEnum role;
+	
+	private LocalDateTime createdAt =LocalDateTime.now();
+	
+	private boolean accountLocked;
+	
+	private int failedLoginAttempts;
+	
+	private boolean emailVerified;
+	
+	private LocalDate dateOfBirth;
+	
+	@OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+	private List<Account> accounts;
+	
+	@OneToMany(mappedBy = "user",cascade=CascadeType.ALL)
+	private List<Beneficiary> beneficiaries;
+	
+	@OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+	private List<Loan> loans;
+	
+	
+	
 }
